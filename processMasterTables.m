@@ -1,52 +1,67 @@
-function processMasterTables(directoryPath, outputName)
-    % processMasterTables2 - Processes subfolders of Cytosim data and appends
-    % master tables into a uniform struct array.
+function processMasterTables(userInput)
+    % processMasterTables - Processes Cytosim output folders into a struct array.
     %
-    % INPUTS:
-    %   directoryPath - path containing subfolders of .txt Cytosim files
-    %   outputName    - name for the resulting struct array variable in the base workspace
-    %
-    % Each entry in the struct will have:
-    %   .Time         - array of time points
-    %   .solid        - table with frame-wise matrices (e.g., cenX, cenY, class, identity)
-    %   .couple       - same as solid (if present)
-
-    % Check folder validity
-    if ~isfolder(directoryPath)
-        error('The specified directory does not exist.');
+    % INPUT: userInput (struct) with optional fields:
+    %   - workDir      : root directory with subfolders (default: current directory)
+    %   - tableName    : output variable name in base workspace (default: 'CytosimTable')
+    %   - resultTypes  : cell array of filename prefixes to filter .txt files (default: all .txt files)
+    
+    % === Handle Defaults ===
+    if ~exist('userInput', 'var') || ~isstruct(userInput)
+        userInput = struct();
+    end
+    if ~isfield(userInput, 'workDir') || isempty(userInput.workDir)
+        userInput.workDir = pwd;
+        fprintf('No workDir provided. Using current directory: %s\n', userInput.workDir);
+    end
+    if ~isfield(userInput, 'tableName') || isempty(userInput.tableName)
+        userInput.tableName = 'CytosimTable';
+        fprintf('No tableName provided. Using default: %s\n', userInput.tableName);
+    end
+    useFilter = false;
+    if isfield(userInput, 'resultTypes') && iscell(userInput.resultTypes) && ~isempty(userInput.resultTypes)
+        filterList = cellfun(@char, userInput.resultTypes, 'UniformOutput', false);
+        useFilter = true;
+        fprintf('Filtering .txt files using: %s\n', strjoin(filterList, ', '));
+    else
+        fprintf('No resultTypes provided. Using all .txt files.\n');
     end
 
-    % Get all valid subfolders
-    subfolders = dir(directoryPath);
+    % === Validate folder ===
+    if ~isfolder(userInput.workDir)
+        error('The specified workDir "%s" does not exist.', userInput.workDir);
+    end
+
+    % === Process subfolders ===
+    subfolders = dir(userInput.workDir);
     subfolders = subfolders([subfolders.isdir]);
     subfolders = subfolders(~ismember({subfolders.name}, {'.', '..'}));
 
-    % Initialize output
-    combinedStructArray = [];  % Delay initialization until first valid entry
-    structIndex = 1;
-
+    combinedStructArray = [];
     for i = 1:length(subfolders)
-        subfolderPath = fullfile(directoryPath, subfolders(i).name);
+        subfolderPath = fullfile(userInput.workDir, subfolders(i).name);
         fprintf('Processing folder: %s\n', subfolderPath);
 
-        % Get .txt files in subfolder
         txtFiles = dir(fullfile(subfolderPath, '*.txt'));
+
+        if useFilter
+            txtFiles = txtFiles(arrayfun(@(f) any(startsWith(f.name, filterList)), txtFiles));
+        end
+
         if isempty(txtFiles)
-            fprintf('No .txt files in "%s". Skipping.\n', subfolderPath);
+            fprintf('No matching .txt files in "%s". Skipping.\n', subfolderPath);
             continue;
         end
 
-        % Build config for masterTableFinal
+        % === Build config for masterTableFinal ===
         config.Name = 'tempMasterTable';
         config.steps = cell(length(txtFiles), 1);
         for j = 1:length(txtFiles)
             config.steps{j} = fullfile(subfolderPath, txtFiles(j).name);
         end
 
-        % Run masterTableFinal
+        % === Run and retrieve table ===
         masterTableFinal(config);
-
-        % Get the resulting master table
         if evalin('base', "exist('tempMasterTable', 'var')")
             masterTable = evalin('base', 'tempMasterTable');
             evalin('base', 'clear tempMasterTable');
@@ -55,42 +70,42 @@ function processMasterTables(directoryPath, outputName)
             continue;
         end
 
-        % Build struct entry
+        % === Build struct entry ===
         entry = struct();
         entry.Time = masterTable.Time;
 
         otherVars = setdiff(masterTable.Properties.VariableNames, {'Time'});
         for k = 1:numel(otherVars)
-            field = otherVars{k};
-            entry.(field) = masterTable.(field);
+            entry.(otherVars{k}) = masterTable.(otherVars{k});
         end
 
-        % Append with consistent field layout
+        % === Append to array ===
         if isempty(combinedStructArray)
-            combinedStructArray = repmat(entry, 1, 1);  % Initialize with first entry
+            combinedStructArray = repmat(entry, 1, 1);
         else
-            % Add missing fields to entry
-            existingFields = fieldnames(combinedStructArray);
-            entryFields = fieldnames(entry);
-
-            for f = 1:numel(existingFields)
-                if ~isfield(entry, existingFields{f})
-                    entry.(existingFields{f}) = [];
-                end
-            end
-
-            % Add missing fields to prior structs
-            for f = 1:numel(entryFields)
-                if ~isfield(combinedStructArray, entryFields{f})
-                    [combinedStructArray.(entryFields{f})] = deal([]);
-                end
-            end
-
-            combinedStructArray(end+1) = entry;
+            combinedStructArray = syncStructFields(combinedStructArray, entry);
         end
     end
 
-    % Save to base workspace
-    assignin('base', outputName, combinedStructArray);
-    fprintf(' Struct array "%s" is now in the base workspace.\n', outputName);
+    % === Output to base workspace ===
+    assignin('base', userInput.tableName, combinedStructArray);
+    fprintf('Struct array "%s" is now in the base workspace.\n', userInput.tableName);
+end
+
+function structArray = syncStructFields(structArray, entry)
+    % Ensures all structs have the same fields
+    existingFields = fieldnames(structArray);
+    newFields = fieldnames(entry);
+
+    for f = 1:numel(existingFields)
+        if ~isfield(entry, existingFields{f})
+            entry.(existingFields{f}) = [];
+        end
+    end
+    for f = 1:numel(newFields)
+        if ~isfield(structArray, newFields{f})
+            [structArray.(newFields{f})] = deal([]);
+        end
+    end
+    structArray(end+1) = entry;
 end
