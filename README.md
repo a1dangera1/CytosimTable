@@ -9,22 +9,38 @@ Manual Mode: process explicitly listed result files.
 Flexible file filteringby result type(IE: solid_position, couple_state)
 Outputs clean, structured MATLAB variables ready for analysis
 
-A code used for matlab that will import data reported by cytosim into a readily usable table format
 
-If you have not already downloaded Cytosim please do so [here](https://gitlab.com/f-nedelec/cytosiml)
+## Getting started
+A code used for MATLAB that will import data reported by Cytosim into a readily usable table format
+
+If you have not already downloaded Cytosim, please do so [here](https://gitlab.com/f-nedelec/cytosiml)
 
 The purpose of this document is to create an understanding of the MATLAB software presented.
 
+## example usage
+
+### automatic mode
+
+userInput.automode = 'on';
+userInput.workDir = 'C:/simulations';
+userInput.resultTypes = {'solid_position', 'couple_state'}; % Optional
+userInput.tableName = 'MyStructOutput'; % Optional
+CytosimTable(userInput);
+
+### manual mode
+
+userInput.automode = 'off';
+userInput.cytosimFilePaths = {
+    'C:/simA/solid_position0000.txt';
+    'C:/simA/couple_state0000.txt'
+};
+userInput.tableName = 'MyTableOutput'; % Optional
+CytosimTable(userInput);
 
 **Bash Script**
 
 To run batches of code simultaneously, you will want to download [Python](https://www.python.org/) and locate preconfig.py. It should be under python\run.
 
-Place the preconfig.py file in any folder you wish to run batches of cytosim models out of. For a better understanding of the ways you can run multiple models, please read the preconfig.py document
+Place the preconfig.py file in any folder you wish to run batches of Cytosim models from. For a better understanding of the ways you can run multiple models, please read the preconfig.py document.
 
 
-
-
-**CytosimMasterTable**
-
-to utilize any of the software 
