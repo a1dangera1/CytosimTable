@@ -37,10 +37,14 @@ userInput.cytosimFilePaths = {
 userInput.tableName = 'MyTableOutput'; % Optional
 CytosimTable(userInput);
 
-**Bash Script**
+## Bash Script
 
 To run batches of code simultaneously, you will want to download [Python](https://www.python.org/) and locate preconfig.py. It should be under python\run.
 
 Place the preconfig.py file in any folder you wish to run batches of Cytosim models from. For a better understanding of the ways you can run multiple models, please read the preconfig.py document.
+
+the file you will be running will be config.cym.tpl the file makeup of a config.cym.tpl file is exactly the same as a config.cym except multiple parameters can be run at once.
+
+**IE:** fibers = [[ [ 10, 50, 100, 500, etc]] ]]
 
 
