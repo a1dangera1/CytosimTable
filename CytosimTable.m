@@ -12,7 +12,7 @@ function CytosimTable(userInput)
 %   userInput.workDir            : (string) path to directory containing simulation subfolders
 %                                   Default: current directory (pwd)
 %   userInput.resultTypes        : (cell array of strings) e.g., {'solid_position', 'couple_state'}
-%                                   Filters which .txt files to include based on filename prefix
+%                                   Filters which .txt files to include based on filename prefix ( default = all files included)
 %
 % Optional (MANUAL MODE):
 %   userInput.cytosimFilePaths   : (cell array of strings) full paths to .txt result files
