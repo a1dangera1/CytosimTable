@@ -45,6 +45,8 @@ Place the preconfig.py file in any folder you wish to run batches of Cytosim mod
 
 the file you will be running will be config.cym.tpl the file makeup of a config.cym.tpl file is exactly the same as a config.cym except multiple parameters can be run at once.
 
-**IE:** fibers = [[ [ 10, 50, 100, 500, etc]] ]]
+**IE:** fibers = [[ [ 10, 50, 100, 500, etc] ]]. 
+
+running preconfig.py with config.cym.tpl will
 
 
