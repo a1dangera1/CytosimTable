@@ -2,7 +2,7 @@
 
 a MATLAB utility for processing output files from [Cytosim](http://www.cytosim.org/) this tool reads .txt result files extracts structured data and outputs a Matlab table
 
-##Features##
+## Features
 
 Automatic mode: Scans subfolders for result files and organizes them by subfolder
 Manual Mode: process explicitly listed result files.
