@@ -8,17 +8,17 @@ function CytosimTable(userInput)
 %       'on'  → Automatic mode (default)
 %       'off' → Manual mode (requires cytosimFilePaths)
 %
-% Optional (AUTOMATIC MODE):
+% additional input (AUTOMATIC MODE):
 %   userInput.workDir            : (string) path to directory containing simulation subfolders
 %                                   Default: current directory (pwd)
 %   userInput.resultTypes        : (cell array of strings) e.g., {'solid_position', 'couple_state'}
 %                                   Filters which .txt files to include based on filename prefix ( default = all files included)
 %
-% Optional (MANUAL MODE):
+% additional input (MANUAL MODE):
 %   userInput.cytosimFilePaths   : (cell array of strings) full paths to .txt result files
 %                                   Required when automode = 'off'
 %
-% Optional (BOTH MODES):
+% additional input (BOTH MODES):
 %   userInput.tableName          : (string) name of the variable to assign in base workspace
 %                                   Default: 'CytosimTable'
 % ===============================================================
